@@ -110,8 +110,8 @@ def _push_whatsapp(to: str, text: str):
     # Always queue for the simulator so the chat UI can pick it up
     _wa_sim_queues.setdefault(to, []).extend(chunks)
 
-    if not _twilio_client:
-        logging.warning("[WHATSAPP] No Twilio client — message queued for simulator only")
+    if not _twilio_client or to == _WA_SIM_NUMBER:
+        logging.warning("[WHATSAPP] No Twilio client or simulator number — message queued for simulator only")
         return
     logger.info("[WHATSAPP] Pushing %d chunk(s) to %s | total_len=%d", len(chunks), to, len(text))
     for i, chunk in enumerate(chunks):
@@ -246,10 +246,17 @@ _database_url = os.environ.get("DATABASE_URL", "")
 session_service = None
 if _database_url:
     # Normalise URL: handle both postgres:// and postgresql:// schemes
-    _sa_url = _database_url
-    if _sa_url.startswith("postgres://"):
-        _sa_url = "postgresql://" + _sa_url[len("postgres://"):]
-    _sqlalchemy_url = _sa_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+    # and quote the username so dotted Supabase pooler names
+    # (e.g. "postgres.ref") survive psycopg2's URL parser.
+    from urllib.parse import urlparse, quote
+    _parsed_db = urlparse(_database_url)
+    _quoted_user = quote(_parsed_db.username or "", safe="")
+    _quoted_pass = quote(_parsed_db.password or "", safe="")
+    _sqlalchemy_url = (
+        f"postgresql+psycopg2://{_quoted_user}:{_quoted_pass}"
+        f"@{_parsed_db.hostname}:{_parsed_db.port or 5432}"
+        f"/{_parsed_db.path.lstrip('/') or 'postgres'}"
+    )
     try:
         from google.adk.sessions import DatabaseSessionService
         db.run_migration_sync(_sqlalchemy_url)
