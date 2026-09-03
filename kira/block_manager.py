@@ -304,8 +304,8 @@ Return ONLY the JSON object. No other text before or after it."""
 
 
 async def create_block(form_data: dict) -> dict:
-    """Create a new content block by generating .md files with Gemini."""
-    from google import genai
+    """Create a new content block by generating .md files with Claude."""
+    import anthropic
 
     block_id = _slugify(form_data["name"])
 
@@ -319,16 +319,14 @@ async def create_block(form_data: dict) -> dict:
         examples = _load_space_examples()
         prompt = _build_meta_prompt(form_data, examples)
 
-        client = genai.Client()
-        response = client.models.generate_content(
-            model="gemini-3.5-flash",
-            contents=prompt,
-            config=genai.types.GenerateContentConfig(
-                response_mime_type="application/json",
-            ),
+        client = anthropic.Anthropic()
+        response = client.messages.create(
+            model="claude-sonnet-5",
+            max_tokens=8192,
+            messages=[{"role": "user", "content": prompt}],
         )
 
-        result = json.loads(response.text)
+        result = json.loads(response.content[0].text)
 
         # Save .md files
         file_map = {

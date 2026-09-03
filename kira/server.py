@@ -105,10 +105,11 @@ def _push_whatsapp(to: str, text: str):
         except Exception as e:
             logger.error("[WHATSAPP] Failed to send chunk %d | error=%s", i + 1, e)
 
+import anthropic
+
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types as genai_types
-from google import genai
 
 from .agent import build_agents
 from . import block_manager
@@ -122,11 +123,27 @@ logger = logging.getLogger(__name__)
 
 # ── Summarization client for WhatsApp responses ──────────────────
 
-_genai_client = genai.Client()
+_anthropic_client = anthropic.Anthropic()
+
+_WHATSAPP_SUMMARIZE_SYSTEM = (
+    "You are a WhatsApp message formatter for an AI called Kira.\n\n"
+    "Rules:\n"
+    "1. Strip ALL production details — scripts, shot breakdowns, visual "
+    "descriptions, voiceover text, style specs, camera directions. The "
+    "user does not need to review those.\n"
+    "2. Keep: topic names, reasons why they'll work, any URLs, and any "
+    "questions or choices the user needs to answer.\n"
+    "3. ALWAYS end with a clear action line — what should the user do "
+    "next? Examples: 'Pick a number, or say more for different options.' "
+    "or 'You don't need to do anything — I'll send the video when it's "
+    "ready.' or 'Want me to look for different topics?'\n"
+    "4. Use plain text, numbered lists, and line breaks. No markdown.\n"
+    "5. Keep under 800 characters."
+)
 
 
 async def _summarize_for_whatsapp(text: str) -> str:
-    """Use a fast LLM to summarize a long agent response for WhatsApp.
+    """Use Claude to summarize a long agent response for WhatsApp.
 
     Keeps the original meaning but fits within WhatsApp's readability
     constraints (~1200 chars). Returns the original if it's already short."""
@@ -135,29 +152,13 @@ async def _summarize_for_whatsapp(text: str) -> str:
     logger.info("[SUMMARIZE] Summarizing response for WhatsApp | original_len=%d", len(text))
     t0 = time.time()
     try:
-        response = _genai_client.models.generate_content(
-            model="gemini-3.5-flash",
-            contents=genai_types.Content(
-                role="user",
-                parts=[genai_types.Part(text=(
-                    "You are a WhatsApp message formatter for an AI called Kira.\n\n"
-                    "Rules:\n"
-                    "1. Strip ALL production details — scripts, shot breakdowns, visual "
-                    "descriptions, voiceover text, style specs, camera directions. The "
-                    "user does not need to review those.\n"
-                    "2. Keep: topic names, reasons why they'll work, any URLs, and any "
-                    "questions or choices the user needs to answer.\n"
-                    "3. ALWAYS end with a clear action line — what should the user do "
-                    "next? Examples: 'Pick a number, or say more for different options.' "
-                    "or 'You don't need to do anything — I'll send the video when it's "
-                    "ready.' or 'Want me to look for different topics?'\n"
-                    "4. Use plain text, numbered lists, and line breaks. No markdown.\n"
-                    "5. Keep under 800 characters.\n\n"
-                    f"Original message:\n{text}"
-                ))],
-            ),
+        response = _anthropic_client.messages.create(
+            model="claude-sonnet-5",
+            max_tokens=1024,
+            system=_WHATSAPP_SUMMARIZE_SYSTEM,
+            messages=[{"role": "user", "content": f"Original message:\n{text}"}],
         )
-        summary = response.text.strip()
+        summary = response.content[0].text.strip()
         logger.info("[SUMMARIZE] Done | summary_len=%d | elapsed=%.1fs",
                     len(summary), time.time() - t0)
         return summary

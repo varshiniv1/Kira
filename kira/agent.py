@@ -2,9 +2,9 @@ import json
 import logging
 import os
 
+import anthropic
 from google.adk.agents import LlmAgent
 from google.adk.models.llm_response import LlmResponse
-from google import genai
 from google.genai import types
 
 log = logging.getLogger(__name__)
@@ -23,7 +23,8 @@ from .tools import background_music
 from .tools.mux_voiceover import fit_and_mux_audio, mux_music_only
 from .tools.youtube import publish_video
 
-MODEL = "gemini-3.5-flash"
+ADK_MODEL = "litellm/claude-sonnet-5"
+CLAUDE_MODEL = "claude-sonnet-5"
 
 _PRODUCTION_START_PHRASES = [
     "making your video now",
@@ -37,11 +38,7 @@ _PRODUCTION_START_PHRASES = [
 
 def _force_transfer_after_model(callback_context, llm_response):
     """Intercept kira's response: if it signals production start but forgot
-    to call transfer_to_agent, inject the function call automatically.
-
-    Gemini-3.5-flash sometimes outputs the production-start text correctly
-    but omits the transfer_to_agent tool call, causing the execution agent
-    to never start."""
+    to call transfer_to_agent, inject the function call automatically."""
     if not llm_response or not llm_response.content or not llm_response.content.parts:
         return None
 
@@ -175,7 +172,7 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
     # that call the LLM internally, execution_agent stays in control.
     _script_prompt = load_block_prompt("script_writer.md")
     _planner_prompt = load_block_prompt("production_breakdown.md")
-    _llm_client = genai.Client()
+    _anthropic_client = anthropic.Anthropic()
 
     def write_script(creative_brief: str) -> str:
         """Write a production-ready script for a YouTube Short.
@@ -183,15 +180,15 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
         source) and returns a complete script with beats, narration,
         visuals, and audio design. Call this FIRST."""
         log.info("[TOOL] write_script | brief_len=%d", len(creative_brief))
-        resp = _llm_client.models.generate_content(
-            model=MODEL,
-            contents=creative_brief,
-            config=types.GenerateContentConfig(
-                system_instruction=_script_prompt,
-            ),
+        resp = _anthropic_client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=4096,
+            system=_script_prompt,
+            messages=[{"role": "user", "content": creative_brief}],
         )
-        log.info("[TOOL] write_script complete | result_len=%d", len(resp.text))
-        return resp.text
+        result = resp.content[0].text
+        log.info("[TOOL] write_script complete | result_len=%d", len(result))
+        return result
 
     def plan_production(script: str) -> str:
         """Plan the shot-by-shot production breakdown for a finished script.
@@ -199,15 +196,15 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
         image prompts, video prompts, continuity notes, and a single
         VOICEOVER PROMPT for TTS. Call AFTER write_script."""
         log.info("[TOOL] plan_production | script_len=%d", len(script))
-        resp = _llm_client.models.generate_content(
-            model=MODEL,
-            contents=script,
-            config=types.GenerateContentConfig(
-                system_instruction=_planner_prompt,
-            ),
+        resp = _anthropic_client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=4096,
+            system=_planner_prompt,
+            messages=[{"role": "user", "content": script}],
         )
-        log.info("[TOOL] plan_production complete | result_len=%d", len(resp.text))
-        return resp.text
+        result = resp.content[0].text
+        log.info("[TOOL] plan_production complete | result_len=%d", len(result))
+        return result
 
     # ── Execution agent tools ────────────────────────────────
     exec_tools = [
@@ -230,7 +227,7 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
 
     execution_agent = LlmAgent(
         name="execution_agent",
-        model=MODEL,
+        model=ADK_MODEL,
         description=(
             "Production agent that takes a confirmed creative brief and "
             "autonomously produces the final video: writes a script, plans "
@@ -252,7 +249,7 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
 
     root_agent = LlmAgent(
         name="kira",
-        model=MODEL,
+        model=ADK_MODEL,
         description=f"Kira — autonomous content strategist for: {block_config['name']}.",
         instruction=load_block_prompt("research_agent.md"),
         tools=root_tools,

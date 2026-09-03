@@ -3,6 +3,8 @@ uvicorn[standard]
 python-dotenv
 google-adk[db]
 google-genai
+anthropic
+litellm
 fal-client
 google-api-python-client
 google-auth
