@@ -7,7 +7,7 @@ on:
 env:
   PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   REGION: ${{ vars.GCP_REGION || 'us-central1' }}
-  SERVICE: kira
+  SERVICE: kira-v2
   REPOSITORY: kira
 
 jobs:
@@ -53,7 +53,10 @@ jobs:
             --min-instances 0 \
             --max-instances 1 \
             --allow-unauthenticated \
-            --set-env-vars "ADK_TRACE_TO_CLOUD=true" \
+            --set-env-vars "\
+              ADK_TRACE_TO_CLOUD=true,\
+              LEGACY_BACKEND_URL=${{ secrets.LEGACY_BACKEND_URL }},\
+              WHITELIST_NUMBERS=${{ secrets.WHITELIST_NUMBERS }}" \
             --set-secrets "\
               GOOGLE_API_KEY=GOOGLE_API_KEY:latest,\
               FAL_KEY=FAL_KEY:latest,\

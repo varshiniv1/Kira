@@ -50,6 +50,7 @@ def upload_video(local_path: str, filename: str = "") -> str:
 
     log.info("[MEDIA] Uploading video | path=%s | blob=%s", local_path, blob_name)
     blob.upload_from_filename(local_path, content_type="video/mp4")
+    blob.make_public()
     url = f"https://storage.googleapis.com/{_BUCKET_NAME}/{blob_name}"
     log.info("[MEDIA] Upload complete | url=%s", url)
     return url
@@ -70,6 +71,7 @@ def upload_image(local_path: str, filename: str = "") -> str:
 
     log.info("[MEDIA] Uploading image | path=%s | blob=%s", local_path, blob_name)
     blob.upload_from_filename(local_path)
+    blob.make_public()
     url = f"https://storage.googleapis.com/{_BUCKET_NAME}/{blob_name}"
     log.info("[MEDIA] Upload complete | url=%s", url)
     return url

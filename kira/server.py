@@ -16,6 +16,7 @@ import traceback
 from contextlib import asynccontextmanager
 from xml.sax.saxutils import escape as xml_escape
 from dotenv import load_dotenv
+import requests as _requests
 
 # ── Logging setup ────────────────────────────────────────────────
 logging.basicConfig(
@@ -46,6 +47,33 @@ if _twilio_sid and _twilio_token and _twilio_from:
         logging.info("Twilio client initialised for outbound WhatsApp messages")
     except Exception as e:
         logging.warning(f"Twilio client init failed: {e}")
+
+
+# ── Legacy routing (proxy non-whitelisted numbers to old backend) ─
+_LEGACY_BACKEND_URL = os.environ.get("LEGACY_BACKEND_URL", "").rstrip("/")
+_whitelist_numbers: set[str] = set()
+_seed = os.environ.get("WHITELIST_NUMBERS", "")
+if _seed:
+    for n in _seed.split(","):
+        n = n.strip()
+        if n:
+            if not n.startswith("whatsapp:"):
+                n = f"whatsapp:{n}"
+            _whitelist_numbers.add(n)
+    logging.info("Whitelist seeded with %d numbers: %s", len(_whitelist_numbers), _whitelist_numbers)
+if _LEGACY_BACKEND_URL:
+    logging.info("Legacy routing enabled → %s", _LEGACY_BACKEND_URL)
+
+
+def _proxy_to_legacy(form_data: dict) -> bytes:
+    """Forward a webhook request to the legacy backend (sync, run in executor)."""
+    resp = _requests.post(
+        f"{_LEGACY_BACKEND_URL}/whatsapp",
+        data=form_data,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        timeout=30,
+    )
+    return resp.content
 
 
 # ── WhatsApp simulator message queue ─────────────────────────────
@@ -1212,6 +1240,18 @@ async def whatsapp_webhook(request: Request):
             media_type="application/xml",
         )
 
+    # ── Route non-whitelisted numbers to the legacy backend ──
+    if _LEGACY_BACKEND_URL and from_number not in _whitelist_numbers:
+        logger.info("[ROUTER] Proxying to legacy | from=%s | body=%s", from_number, body[:80])
+        try:
+            form_dict = {k: form[k] for k in form}
+            loop = asyncio.get_event_loop()
+            content = await loop.run_in_executor(None, _proxy_to_legacy, form_dict)
+            return Response(content=content, media_type="application/xml")
+        except Exception as e:
+            logger.error("[ROUTER] Legacy proxy failed | error=%s", e)
+            return _twiml("Sorry, something went wrong. Please try again.")
+
     logger.info(f"WhatsApp from {from_number}: {body[:80]}")
 
     session, entry = await _get_wa_session(from_number)
@@ -1943,6 +1983,52 @@ async def wa_sim_reset():
     _wa_sessions.pop(_WA_SIM_NUMBER, None)
     _wa_sim_queues.pop(_WA_SIM_NUMBER, None)
     return {"status": "ok"}
+
+
+# ── Whitelist management API ──────────────────────────────────────
+
+@app.get("/api/whitelist")
+async def get_whitelist():
+    """List all whitelisted numbers."""
+    return {
+        "numbers": sorted(_whitelist_numbers),
+        "legacy_backend": _LEGACY_BACKEND_URL or None,
+        "routing_enabled": bool(_LEGACY_BACKEND_URL),
+    }
+
+
+@app.post("/api/whitelist")
+async def add_to_whitelist(request: Request):
+    """Add a phone number to the whitelist. Body: {"number": "+1234567890"}"""
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse({"error": "Invalid JSON."}, status_code=400)
+    number = body.get("number", "").strip()
+    if not number:
+        return JSONResponse({"error": "No number provided."}, status_code=400)
+    if not number.startswith("whatsapp:"):
+        number = f"whatsapp:{number}"
+    _whitelist_numbers.add(number)
+    logger.info("[WHITELIST] Added %s | total=%d", number, len(_whitelist_numbers))
+    return {"status": "added", "number": number, "total": len(_whitelist_numbers)}
+
+
+@app.delete("/api/whitelist")
+async def remove_from_whitelist(request: Request):
+    """Remove a phone number from the whitelist. Body: {"number": "+1234567890"}"""
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse({"error": "Invalid JSON."}, status_code=400)
+    number = body.get("number", "").strip()
+    if not number:
+        return JSONResponse({"error": "No number provided."}, status_code=400)
+    if not number.startswith("whatsapp:"):
+        number = f"whatsapp:{number}"
+    _whitelist_numbers.discard(number)
+    logger.info("[WHITELIST] Removed %s | total=%d", number, len(_whitelist_numbers))
+    return {"status": "removed", "number": number, "total": len(_whitelist_numbers)}
 
 
 # ── Entry point ───────────────────────────────────────────────────
