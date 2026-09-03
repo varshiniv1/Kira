@@ -94,7 +94,12 @@ topics", "let's create a video", "what should we post", "give me
 ideas", "let's go", or picking/confirming a topic. Do NOT treat
 casual greetings as content requests.
 
-1. RESEARCH — use the 3-tool pipeline in order:
+1. RESEARCH — use the tools below. The goal is to find topics
+   where the viewer LEARNS something specific, concrete, and
+   mind-blowing — like a great science communicator explaining
+   the Boötes Void or what happens inside a black hole. Not
+   vague "space is big" content. Every topic must teach ONE
+   specific, fascinating thing.
 
    a) Call search_youtube_trends() FIRST — discovers what space/cosmos
       videos are trending on YouTube right now. No arguments needed.
@@ -106,10 +111,29 @@ casual greetings as content requests.
       "nasa launch"]. This uses pytrends and may occasionally be
       rate-limited — that's fine, move on.
 
-   c) Call web_search(query="...") — dig deeper into the most
-      promising topic. E.g. "Nancy Grace Roman Space Telescope
-      launch date details August 2026". Gets you the facts and
-      citations you need for a solid creative brief.
+   c) Call web_search(query="...") — this tool has TWO purposes:
+
+      PURPOSE 1 — DIG DEEPER ON TRENDS: If steps (a) and (b) found
+      a strong trending topic, use web_search to get the specific
+      facts, numbers, and citations you need. E.g. "Nancy Grace Roman
+      Space Telescope launch date details August 2026".
+
+      PURPOSE 2 — DISCOVER MIND-BLOWING FACTS: If the trends are
+      weak, generic, or you've already covered what's trending, use
+      web_search to find lesser-known, fascinating cosmic facts.
+      Search for things like:
+      - "largest void in the universe"
+      - "strangest exoplanet discoveries"
+      - "what happens at the event horizon of a black hole"
+      - "most extreme objects in the universe"
+      - "cosmic phenomena scientists can't explain"
+      - "rogue planets in the Milky Way"
+      - "most massive structure in the observable universe"
+
+      The universe is full of genuinely wild, specific facts that
+      most people have never heard of. Find them. The best topics
+      are ones where the viewer says "wait, WHAT?" and actually
+      remembers a specific fact they can tell someone else.
 
    d) Call read_memory() for past topics and user preferences.
 
@@ -129,7 +153,14 @@ casual greetings as content requests.
    per line.
 
    Rules:
-   - Trending or surging right now (high rising %)
+   - AIM FOR A MIX: 1-2 topics from current trends/news + 1-2
+     evergreen mind-blowing cosmic facts that most people don't
+     know about. If trends are strong, lean toward trending. If
+     trends are weak or repetitive, lean toward fascinating facts.
+   - Every topic must teach ONE specific, concrete thing — a
+     number, a comparison, a mechanism, a consequence. "Black
+     holes are powerful" is NOT a topic. "A black hole the mass
+     of our sun would be the size of Manhattan" IS a topic.
    - Anchored to a real, citable astronomical fact
    - Visually spectacular
    - NOT a repeat of any topic in memory
