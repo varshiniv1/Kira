@@ -252,17 +252,20 @@ if _database_url:
     _parsed_db = urlparse(_database_url)
     _quoted_user = quote(_parsed_db.username or "", safe="")
     _quoted_pass = quote(_parsed_db.password or "", safe="")
-    _sqlalchemy_url = (
-        f"postgresql+psycopg2://{_quoted_user}:{_quoted_pass}"
+    _db_suffix = (
+        f"{_quoted_user}:{_quoted_pass}"
         f"@{_parsed_db.hostname}:{_parsed_db.port or 5432}"
         f"/{_parsed_db.path.lstrip('/') or 'postgres'}"
     )
+    _sync_url = f"postgresql+psycopg2://{_db_suffix}"
+    _async_url = f"postgresql+asyncpg://{_db_suffix}"
     try:
         from google.adk.sessions import DatabaseSessionService
-        db.run_migration_sync(_sqlalchemy_url)
+        db.run_migration_sync(_sync_url)
         session_service = DatabaseSessionService(
-            db_url=_sqlalchemy_url,
-            connect_args={"sslmode": "require", "connect_timeout": 10},
+            db_url=_async_url,
+            connect_args={"ssl": "require", "timeout": 10,
+                          "statement_cache_size": 0},
         )
         logger.info("[INIT] Using DatabaseSessionService for persistent sessions")
     except Exception as e:
