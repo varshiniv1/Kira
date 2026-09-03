@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "kira-ui",
-      "runtimeExecutable": "python3",
+      "runtimeExecutable": ".venv/bin/python",
       "runtimeArgs": ["-m", "uvicorn", "kira.server:app", "--host", "127.0.0.1", "--port", "8080", "--loop", "asyncio", "--http", "h11"],
       "port": 8080
     }

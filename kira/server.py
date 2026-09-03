@@ -124,6 +124,7 @@ def _push_whatsapp(to: str, text: str):
             logger.error("[WHATSAPP] Failed to send chunk %d | error=%s", i + 1, e)
 
 import anthropic
+from anthropic.types import TextBlock
 
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -176,7 +177,8 @@ async def _summarize_for_whatsapp(text: str) -> str:
             system=_WHATSAPP_SUMMARIZE_SYSTEM,
             messages=[{"role": "user", "content": f"Original message:\n{text}"}],
         )
-        summary = response.content[0].text.strip()
+        text_block = next((b for b in response.content if isinstance(b, TextBlock)), None)
+        summary = (text_block.text if text_block else response.content[0].text).strip()
         logger.info("[SUMMARIZE] Done | summary_len=%d | elapsed=%.1fs",
                     len(summary), time.time() - t0)
         return summary
@@ -352,6 +354,7 @@ _OWNER_NUMBERS: set[str] = {
     "whatsapp:+919840733969",
     "whatsapp:+14132106772",
     "whatsapp:+919003065436",
+    _WA_SIM_NUMBER,
 }
 _DAILY_VIDEO_LIMIT = 1
 _TOTAL_VIDEO_LIMIT = 3

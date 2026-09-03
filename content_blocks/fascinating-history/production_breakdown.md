@@ -27,7 +27,7 @@ TARGET WPM: [~140-150 for TOTAL DURATION — see timing rules]
 ---
 
 SHOT 1 of N
-Duration: [5-10] seconds
+Duration: [3-5] seconds
 Beats covered: HOOK + CONTEXT (0:00 – 0:06)
 Narration: "[exact words for this shot]"
 
@@ -50,28 +50,28 @@ SHOT 2 of N
 
 ### Shot Duration Strategy
 
-Gemini Omni Flash generates clips of **5–10 seconds** (integer). Shots
-must sum to 18-30 seconds total.
+The video pipeline generates clips of **3–5 seconds** (integer). Shots
+must sum to 18-30 seconds total. Keep shots short and punchy — average
+~3 seconds. Only use 5 seconds when a shot absolutely needs breathing
+room (payoff or epic reveal). Never exceed 5 seconds per shot.
 
 Proven structures:
 
-| Pattern           | Feel                          |
-|-------------------|-------------------------------|
-| 6 + 6 + 8 = 20   | Balanced, versatile           |
-| 5 + 8 + 7 = 20   | Quick hook, long development  |
-| 8 + 8 = 16       | Simple, high-impact           |
-| 10 + 10 = 20     | Two-act, cinematic            |
-| 5 + 5 + 5 + 5 = 20 | Fast-paced, dynamic        |
-| 6 + 8 + 6 = 20   | Slow build, quick close       |
-| 8 + 8 + 8 = 24   | Three-act epic                |
-| 6 + 8 + 8 + 8 = 30 | Full story arc              |
+| Pattern                    | Feel                          |
+|----------------------------|-------------------------------|
+| 3 + 3 + 4 + 4 + 5 = 19   | Epic build, punchy            |
+| 4 + 4 + 4 + 4 + 4 = 20   | Uniform rhythm                |
+| 3 + 4 + 5 + 5 + 5 = 22   | Building to a climax          |
+| 5 + 5 + 5 + 5 = 20        | Four-act, deliberate          |
+| 3 + 3 + 3 + 4 + 5 = 18   | Fast-paced, dynamic           |
+| 4 + 5 + 5 + 5 + 5 = 24   | Full story arc                |
 
 How to choose:
-- Hook demands a quick cut? Start with 5 s.
-- Payoff needs room to breathe? Give it 8–10 s.
-- Multiple distinct locations/eras? More shots (3-4).
-- Single continuous scene? Fewer shots (2).
-- Emotional build? Short-to-long progression (5 → 7 → 8).
+- Hook demands impact? Use 3 s.
+- Epic reveal or payoff? Max 5 s.
+- Multiple distinct locations/eras? More shots (5-6).
+- Single continuous scene? Fewer shots (3-4).
+- Emotional build? Short-to-long (3 → 4 → 5).
 
 ### Voiceover Timing (TTS)
 
@@ -115,7 +115,7 @@ on output quality.
 [colour palette],
 [atmosphere / particles / environmental effects],
 [style keywords — SAME across all shots],
-9:16 vertical composition, no text overlay, no watermark
+9:16 vertical composition, no text overlay, no watermark, no embedded text, no labels, no writing, no captions
 ```
 
 **Rules:**
@@ -150,7 +150,7 @@ on output quality.
    Keep the same colour temperature and lighting direction throughout.
 
 5. **Always end with:** `9:16 vertical composition, no text overlay,
-   no watermark`
+   no watermark, no embedded text, no labels, no writing, no captions`
 
 6. **History-specific visual language:**
    - Weathered stone, aged metal, natural materials (wood, leather,
@@ -259,7 +259,7 @@ is the hardest part and the most important.
 Before returning your shot list, verify every item:
 
 - [ ] Total duration is 18-30 seconds
-- [ ] Each shot is an integer between 5 and 10 seconds
+- [ ] Each shot is an integer between 3 and 5 seconds
 - [ ] Every image prompt has: subject, composition, lighting, colour,
       style, "9:16 vertical", "no text overlay"
 - [ ] Style keywords are IDENTICAL across all image prompts

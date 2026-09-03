@@ -14,14 +14,14 @@ log = logging.getLogger(__name__)
 
 def generate_image(prompt: str) -> str:
     """Generate a reference image from a detailed text prompt using
-    Nano Banana 2 on fal.ai. Always include '9:16 vertical' in the
+    Nano Banana Pro on fal.ai. Always include '9:16 vertical' in the
     prompt for YouTube Shorts format. Returns a URL that can be passed
     to generate_video()."""
     log.info("[IMAGE_GEN] Starting image generation | prompt=%s", prompt[:120])
     t0 = time.time()
     try:
         result = fal_client.subscribe(
-            "fal-ai/nano-banana-2",
+            "fal-ai/nano-banana-pro",
             arguments={
                 "prompt": prompt,
                 "num_images": 1,

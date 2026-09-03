@@ -41,12 +41,11 @@ def generate_video(image_url: str, prompt: str, duration: int = 6) -> str:
     t0 = time.time()
     try:
         result = fal_client.subscribe(
-            "fal-ai/minimax/h3-max-turbo/image-to-video",
+            "minimax/h3-max/image-to-video",
             arguments={
                 "image_url": image_url,
                 "prompt": prompt,
                 "duration": duration_int,
-                "aspect_ratio": "9:16",
                 "resolution": "768P",
                 "prompt_expansion_mode": "quality",
             },

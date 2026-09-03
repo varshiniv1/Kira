@@ -18,8 +18,12 @@ _bucket = None
 def _get_bucket():
     global _bucket
     if _bucket is None:
-        from google.cloud import storage
-        _bucket = storage.Client().bucket(_BUCKET_NAME)
+        try:
+            from google.cloud import storage
+            _bucket = storage.Client().bucket(_BUCKET_NAME)
+        except Exception as e:
+            log.warning("[MEDIA] GCS client init failed: %s", e)
+            return None
     return _bucket
 
 
@@ -46,6 +50,9 @@ def upload_video(local_path: str, filename: str = "") -> str:
 
     blob_name = f"media/videos/{filename}"
     bucket = _get_bucket()
+    if bucket is None:
+        log.warning("[MEDIA] GCS unavailable — skipping video upload")
+        return ""
     blob = bucket.blob(blob_name)
 
     log.info("[MEDIA] Uploading video | path=%s | blob=%s", local_path, blob_name)
@@ -67,6 +74,9 @@ def upload_image(local_path: str, filename: str = "") -> str:
 
     blob_name = f"media/images/{filename}"
     bucket = _get_bucket()
+    if bucket is None:
+        log.warning("[MEDIA] GCS unavailable — skipping image upload")
+        return ""
     blob = bucket.blob(blob_name)
 
     log.info("[MEDIA] Uploading image | path=%s | blob=%s", local_path, blob_name)
