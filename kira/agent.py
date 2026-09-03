@@ -3,6 +3,7 @@ import logging
 import os
 
 import anthropic
+from anthropic.types import TextBlock
 from google.adk.agents import LlmAgent
 from google.adk.models.llm_response import LlmResponse
 from google.genai import types
@@ -186,7 +187,7 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
             system=_script_prompt,
             messages=[{"role": "user", "content": creative_brief}],
         )
-        result = resp.content[0].text
+        result = next(b.text for b in resp.content if isinstance(b, TextBlock))
         log.info("[TOOL] write_script complete | result_len=%d", len(result))
         return result
 
@@ -202,7 +203,7 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
             system=_planner_prompt,
             messages=[{"role": "user", "content": script}],
         )
-        result = resp.content[0].text
+        result = next(b.text for b in resp.content if isinstance(b, TextBlock))
         log.info("[TOOL] plan_production complete | result_len=%d", len(result))
         return result
 
