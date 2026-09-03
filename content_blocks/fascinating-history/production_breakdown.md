@@ -14,7 +14,7 @@ Return a structured shot list in EXACTLY this format:
 
 ```
 TOTAL DURATION: [X seconds]
-NUMBER OF SHOTS: [2-4]
+NUMBER OF SHOTS: [4-6] (HARD MAX: 6)
 GLOBAL STYLE: [style keywords applied to EVERY image prompt]
 COLOUR PALETTE: [2-3 anchor colours used across all shots]
 LIGHT DIRECTION: [consistent primary light source description]
@@ -27,7 +27,7 @@ TARGET WPM: [~140-150 for TOTAL DURATION — see timing rules]
 ---
 
 SHOT 1 of N
-Duration: [3-5] seconds
+Duration: [5 or 6] seconds
 Beats covered: HOOK + CONTEXT (0:00 – 0:06)
 Narration: "[exact words for this shot]"
 
@@ -50,28 +50,30 @@ SHOT 2 of N
 
 ### Shot Duration Strategy
 
-The video pipeline generates clips of **3–5 seconds** (integer). Shots
-must sum to 18-30 seconds total. Keep shots short and punchy — average
-~3 seconds. Only use 5 seconds when a shot absolutely needs breathing
-room (payoff or epic reveal). Never exceed 5 seconds per shot.
+The video pipeline generates clips of **5–6 seconds** (integer only; the
+model does not support shorter). Shots must sum to **≤30 seconds total**,
+which means a **maximum of 6 shots** (6 × 5 = 30 s). Aim for 4-5 shots
+at 5 s each (20-25 s) for a punchy, well-paced Short.
+
+**HARD RULE: plan at most 6 shots. Never plan 7 or more.**
 
 Proven structures:
 
 | Pattern                    | Feel                          |
 |----------------------------|-------------------------------|
-| 3 + 3 + 4 + 4 + 5 = 19   | Epic build, punchy            |
-| 4 + 4 + 4 + 4 + 4 = 20   | Uniform rhythm                |
-| 3 + 4 + 5 + 5 + 5 = 22   | Building to a climax          |
-| 5 + 5 + 5 + 5 = 20        | Four-act, deliberate          |
-| 3 + 3 + 3 + 4 + 5 = 18   | Fast-paced, dynamic           |
-| 4 + 5 + 5 + 5 + 5 = 24   | Full story arc                |
+| 5 + 5 + 5 + 5 = 20        | Four-act, punchy              |
+| 5 + 5 + 5 + 5 + 5 = 25   | Full-story, energetic         |
+| 5 + 5 + 6 + 6 + 6 = 28   | Building to a climax          |
+| 5 + 5 + 5 + 5 + 5 + 5 = 30 | Six-beat, max length          |
+| 5 + 6 + 6 + 6 = 23        | Four-act with payoff          |
+| 6 + 6 + 6 + 6 = 24        | Four-act, deliberate          |
 
 How to choose:
-- Hook demands impact? Use 3 s.
-- Epic reveal or payoff? Max 5 s.
-- Multiple distinct locations/eras? More shots (5-6).
+- Most shots: 5 s — tight, energetic.
+- Epic reveal or payoff: 6 s max.
+- Multiple distinct locations/eras? Up to 6 shots.
 - Single continuous scene? Fewer shots (3-4).
-- Emotional build? Short-to-long (3 → 4 → 5).
+- Emotional build? Same duration, more shots.
 
 ### Voiceover Timing (TTS)
 
@@ -258,8 +260,8 @@ is the hardest part and the most important.
 
 Before returning your shot list, verify every item:
 
-- [ ] Total duration is 18-30 seconds
-- [ ] Each shot is an integer between 3 and 5 seconds
+- [ ] Total duration is ≤30 seconds (max 6 shots × 5-6 s each)
+- [ ] Each shot is 5 or 6 seconds (integers only — model minimum is 5)
 - [ ] Every image prompt has: subject, composition, lighting, colour,
       style, "9:16 vertical", "no text overlay"
 - [ ] Style keywords are IDENTICAL across all image prompts

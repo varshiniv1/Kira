@@ -23,17 +23,17 @@ def generate_video(image_url: str, prompt: str, duration: int = 6) -> str:
             subject action only — no audio, SFX, or narration (clip
             audio is discarded; TTS and background music are added
             later). Always specify 9:16 vertical.
-        duration: Clip length in seconds, integer 3-5. Default 5.
+        duration: Clip length in seconds, integer 5-6. Default 5.
             Choose based on the shot's role in the edit:
-            shorter for quick hooks or cuts, longer for payoff or
-            establishing shots.
+            5s for quick hooks or cuts, 6s for payoff or establishing shots.
+            Values outside 5-6 are clamped to 5.
 
     Returns: URL of the generated video clip."""
     try:
         duration_int = int(duration)
     except (TypeError, ValueError):
         duration_int = 5
-    if duration_int < 3 or duration_int > 5:
+    if duration_int < 5 or duration_int > 6:
         duration_int = 5
 
     log.info("[VIDEO_GEN] Starting video generation | image=%s | duration=%ds | prompt=%s",
