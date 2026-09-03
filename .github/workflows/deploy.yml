@@ -57,7 +57,7 @@ jobs:
               ADK_TRACE_TO_CLOUD=true,\
               LEGACY_BACKEND_URL=${{ secrets.LEGACY_BACKEND_URL }},\
               WHITELIST_NUMBERS=${{ secrets.WHITELIST_NUMBERS }},\
-              USER_BLOCK_MAP=${{ secrets.USER_BLOCK_MAP }}" \
+              USER_BLOCK_MAP=${{ vars.USER_BLOCK_MAP }}" \
             --set-secrets "\
               GOOGLE_API_KEY=GOOGLE_API_KEY:latest,\
               ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,\
