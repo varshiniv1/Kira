@@ -1,10 +1,10 @@
 fastapi
 uvicorn[standard]
 python-dotenv
-google-adk[db]
+google-adk[db,extensions]
 google-genai
 anthropic
-litellm
+litellm>=1.75.5
 fal-client
 google-api-python-client
 google-auth
