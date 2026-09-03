@@ -6,6 +6,15 @@
       "runtimeExecutable": ".venv/bin/python",
       "runtimeArgs": ["-m", "uvicorn", "kira.server:app", "--host", "127.0.0.1", "--port", "8080", "--loop", "asyncio", "--http", "h11"],
       "port": 8080
+    },
+    {
+      "name": "kira-history",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": ["-m", "uvicorn", "kira.server:app", "--host", "127.0.0.1", "--port", "8081", "--loop", "asyncio", "--http", "h11"],
+      "port": 8081,
+      "env": {
+        "USER_BLOCK_MAP": "whatsapp:+15550001234:fascinating-history"
+      }
     }
   ]
 }

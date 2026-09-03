@@ -1224,7 +1224,7 @@ async def _wa_background_send(entry: dict, session, text: str, from_number: str 
                     if production_launched and effective_name in _BG_PROGRESS_MESSAGES:
                         if effective_name not in progress_sent:
                             progress_sent.add(effective_name)
-                            if from_number and _twilio_client:
+                            if from_number:
                                 _push_whatsapp(from_number, _BG_PROGRESS_MESSAGES[effective_name])
 
                 if hasattr(part, "function_response") and part.function_response:
@@ -1508,7 +1508,7 @@ async def whatsapp_webhook(request: Request):
                                 progress_msg = _WA_PROGRESS_MESSAGES[effective_name]
                                 logger.info("[WA] Sending progress | phase=%s | msg=%s",
                                            effective_name, progress_msg)
-                                if from_number and _twilio_client:
+                                if from_number:
                                     _push_whatsapp(from_number, progress_msg)
 
                     if hasattr(part, "function_response") and part.function_response:
