@@ -245,8 +245,9 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
     )
 
     # ── Root agent tools ─────────────────────────────────────
-    root_tools = [search_youtube_trends, search_google_trends, web_search,
-                  read_memory, write_memory]
+    root_tools = [web_search, read_memory, write_memory]
+    if block_config.get("youtube_trends_enabled", True):
+        root_tools = [search_youtube_trends, search_google_trends] + root_tools
 
     root_agent = LlmAgent(
         name="kira",
