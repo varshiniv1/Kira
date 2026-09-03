@@ -59,6 +59,7 @@ jobs:
               WHITELIST_NUMBERS=${{ secrets.WHITELIST_NUMBERS }}" \
             --set-secrets "\
               GOOGLE_API_KEY=GOOGLE_API_KEY:latest,\
+              ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,\
               FAL_KEY=FAL_KEY:latest,\
               GCS_BUCKET_NAME=GCS_BUCKET_NAME:latest,\
               DATABASE_URL=DATABASE_URL:latest,\
