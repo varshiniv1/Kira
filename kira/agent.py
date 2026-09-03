@@ -5,6 +5,14 @@ import os
 import anthropic
 from anthropic.types import TextBlock
 from google.adk.agents import LlmAgent
+
+
+def _extract_text(resp) -> str:
+    """Extract the text content from a Claude response, skipping ThinkingBlocks."""
+    for block in resp.content:
+        if isinstance(block, TextBlock):
+            return block.text
+    return "".join(b.text for b in resp.content if hasattr(b, "text"))
 from google.adk.models.llm_response import LlmResponse
 from google.genai import types
 
@@ -183,11 +191,11 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
         log.info("[TOOL] write_script | brief_len=%d", len(creative_brief))
         resp = _anthropic_client.messages.create(
             model=CLAUDE_MODEL,
-            max_tokens=4096,
+            max_tokens=16384,
             system=_script_prompt,
             messages=[{"role": "user", "content": creative_brief}],
         )
-        result = next(b.text for b in resp.content if isinstance(b, TextBlock))
+        result = _extract_text(resp)
         log.info("[TOOL] write_script complete | result_len=%d", len(result))
         return result
 
@@ -199,11 +207,11 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
         log.info("[TOOL] plan_production | script_len=%d", len(script))
         resp = _anthropic_client.messages.create(
             model=CLAUDE_MODEL,
-            max_tokens=4096,
+            max_tokens=16384,
             system=_planner_prompt,
             messages=[{"role": "user", "content": script}],
         )
-        result = next(b.text for b in resp.content if isinstance(b, TextBlock))
+        result = _extract_text(resp)
         log.info("[TOOL] plan_production complete | result_len=%d", len(result))
         return result
 
