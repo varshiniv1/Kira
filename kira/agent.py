@@ -23,7 +23,7 @@ from .tools import background_music
 from .tools.mux_voiceover import fit_and_mux_audio, mux_music_only
 from .tools.youtube import publish_video
 
-ADK_MODEL = "claude-sonnet-4-6"
+ADK_MODEL = "anthropic/claude-sonnet-4-6"
 CLAUDE_MODEL = "claude-sonnet-4-6"
 
 _PRODUCTION_START_PHRASES = [
