@@ -64,6 +64,24 @@ if _seed:
 if _LEGACY_BACKEND_URL:
     logging.info("Legacy routing enabled → %s", _LEGACY_BACKEND_URL)
 
+# ── Per-user content block mapping (phone → block_id) ──────────
+# Format: USER_BLOCK_MAP="+919XXXXXXXXX:fascinating-history,+1YYYY:space-cosmos"
+_user_block_map: dict[str, str] = {}
+_ubm_seed = os.environ.get("USER_BLOCK_MAP", "")
+if _ubm_seed:
+    for pair in _ubm_seed.split(","):
+        pair = pair.strip()
+        if ":" not in pair:
+            continue
+        phone, block_id = pair.rsplit(":", 1)
+        phone = phone.strip()
+        block_id = block_id.strip()
+        if phone and block_id:
+            if not phone.startswith("whatsapp:"):
+                phone = f"whatsapp:{phone}"
+            _user_block_map[phone] = block_id
+    logging.info("User block map: %s", _user_block_map)
+
 
 def _proxy_to_legacy(form_data: dict) -> bytes:
     """Forward a webhook request to the legacy backend (sync, run in executor)."""
@@ -261,6 +279,37 @@ runner = Runner(
     plugins=_adk_plugins,
 )
 
+# ── Per-block runner cache for multi-user routing ──────────────
+_block_runners: dict[str, tuple] = {}
+_block_runners[_active_block_id] = (runner, _active_config)
+
+
+def _get_runner_for_user(phone: str) -> tuple:
+    """Return (runner, config, block_id) for a WhatsApp user.
+    Uses the per-user block map if configured, falls back to the
+    global active block."""
+    block_id = _user_block_map.get(phone)
+    if not block_id:
+        return runner, _active_config, _active_block_id
+
+    if block_id in _block_runners:
+        r, cfg = _block_runners[block_id]
+        return r, cfg, block_id
+
+    try:
+        cfg = block_manager.get_block(block_id)
+        path = block_manager.get_block_path(block_id)
+        agent = build_agents(cfg, path)
+        r = Runner(agent=agent, app_name=APP_NAME,
+                    session_service=session_service, plugins=_adk_plugins)
+        _block_runners[block_id] = (r, cfg)
+        logger.info("[BLOCK] Built runner for user block=%s", block_id)
+        return r, cfg, block_id
+    except Exception as e:
+        logger.error("[BLOCK] Failed to build runner for block=%s: %s", block_id, e)
+        return runner, _active_config, _active_block_id
+
+
 # Track active session and production state
 _state = {
     "session_id": None,
@@ -302,6 +351,7 @@ def _effective_tool_name(part) -> str:
 _OWNER_NUMBERS: set[str] = {
     "whatsapp:+919840733969",
     "whatsapp:+14132106772",
+    "whatsapp:+919003065436",
 }
 _DAILY_VIDEO_LIMIT = 1
 _TOTAL_VIDEO_LIMIT = 3
@@ -483,6 +533,7 @@ async def _activate_block(block_id: str):
     _active_config = config
     _active_block_id = block_id
     _active_block_path = block_path
+    _block_runners[block_id] = (runner, config)
 
     # Reset session (new block = new conversation context)
     _state["session_id"] = None
@@ -1079,16 +1130,19 @@ async def chat(request: Request):
 
 # ── WhatsApp / Twilio webhook ────────────────────────────────────
 
-async def _wa_background_send(entry: dict, session, text: str, from_number: str = ""):
+async def _wa_background_send(entry: dict, session, text: str, from_number: str = "",
+                              user_runner=None, user_block_id: str = ""):
     """Process a WhatsApp message in the background and push the reply
     proactively via the Twilio REST API (no second user message needed).
 
     Filters out intermediate production text (scripts, shot plans) so
     the user only sees: the conversational reply, progress updates, and
     the final video link."""
+    _runner = user_runner or runner
+    _block_id = user_block_id or _active_block_id
     entry["processing"] = True
-    logger.info("[WA_BG] Starting background processing | session=%s | text=%s",
-               session.id, text[:80])
+    logger.info("[WA_BG] Starting background processing | session=%s | block=%s | text=%s",
+               session.id, _block_id, text[:80])
     await _load_user_memory(from_number)
     youtube_mod.configure(from_number)
 
@@ -1131,7 +1185,7 @@ async def _wa_background_send(entry: dict, session, text: str, from_number: str 
         reply_sent = False
         progress_sent: set[str] = set()
 
-        async for event in runner.run_async(
+        async for event in _runner.run_async(
             user_id=entry["user_id"],
             session_id=session.id,
             new_message=content,
@@ -1156,7 +1210,7 @@ async def _wa_background_send(entry: dict, session, text: str, from_number: str 
                         production_launched = True
                         entry["status"] = "producing"
                         logger.info("[WA_BG] Production launched | session=%s", session.id)
-                        await db.create_production(entry["session_id"], _active_block_id)
+                        await db.create_production(entry["session_id"], _block_id)
                         if reply_parts and from_number and not reply_sent:
                             reply = "\n".join(reply_parts)
                             summary = await _summarize_for_whatsapp(reply)
@@ -1255,6 +1309,9 @@ async def whatsapp_webhook(request: Request):
 
     logger.info(f"WhatsApp from {from_number}: {body[:80]}")
 
+    # Resolve per-user content block
+    user_runner, user_config, user_block_id = _get_runner_for_user(from_number)
+
     session, entry = await _get_wa_session(from_number)
 
     await db.save_message(entry["session_id"], "user", body)
@@ -1262,7 +1319,7 @@ async def whatsapp_webhook(request: Request):
     # ── Brand-new session → instant greeting, process in background ──
     if entry.get("is_new"):
         entry["is_new"] = False
-        logger.info("[WA] New session | phone=%s | body=%r", from_number, body[:80])
+        logger.info("[WA] New session | phone=%s | block=%s | body=%r", from_number, user_block_id, body[:80])
 
         is_returning = False
         if db.is_enabled():
@@ -1280,32 +1337,35 @@ async def whatsapp_webhook(request: Request):
                    body, normalized, is_casual)
         if is_casual:
             logger.info("[WA] Casual greeting — returning greeting, no agent call")
+            block_name = user_config.get("name", "cool stuff")
             if is_returning:
                 greeting = (
                     "Welcome back! Ready to make another video?\n\n"
-                    "Just say \"let's go\" and I'll find what's trending right now."
+                    "Just say \"let's go\" and we'll pick a topic!"
                 )
             else:
                 greeting = (
-                    "Hey! I'm Kira — I make YouTube Shorts about space "
-                    "and the cosmos, powered by AI.\n\n"
-                    "Just say \"let's make a video\" and I'll find what's "
-                    "trending, pitch you 3 topic ideas, and produce a "
-                    "finished Short in about 5 minutes. You just pick the topic!\n\n"
-                    "Ready when you are 🚀"
+                    f"Hey! I'm Kira — I make YouTube Shorts about "
+                    f"{block_name.lower()}, powered by AI.\n\n"
+                    "Just say \"let's make a video\" and I'll pitch you "
+                    "3 topic ideas and produce a finished Short in about "
+                    "5 minutes. You just pick the topic!\n\n"
+                    "Ready when you are!"
                 )
             await db.save_message(entry["session_id"], "assistant", greeting)
             return _twiml(greeting)
         logger.info("[WA] Non-casual new session — launching background agent")
         asyncio.create_task(
-            _wa_background_send(entry, session, body, from_number=from_number)
+            _wa_background_send(entry, session, body, from_number=from_number,
+                                user_runner=user_runner, user_block_id=user_block_id)
         )
         if is_returning:
             ack = "Welcome back! On it — give me a few seconds..."
         else:
+            block_name = user_config.get("name", "cool stuff")
             ack = (
-                "Hey! I'm Kira — I make YouTube Shorts about space, "
-                "powered by AI.\n\n"
+                f"Hey! I'm Kira — I make YouTube Shorts about "
+                f"{block_name.lower()}, powered by AI.\n\n"
                 "On it! Give me a few seconds..."
             )
         await db.save_message(entry["session_id"], "assistant", ack)
@@ -1407,7 +1467,7 @@ async def whatsapp_webhook(request: Request):
         entry["processing"] = True
         t0 = time.time()
         try:
-            async for event in runner.run_async(
+            async for event in user_runner.run_async(
                 user_id=entry["user_id"],
                 session_id=session.id,
                 new_message=content,
@@ -1436,7 +1496,7 @@ async def whatsapp_webhook(request: Request):
                             production_launched = True
                             entry["status"] = "producing"
                             logger.info("[WA] Production launched | session=%s", session.id)
-                            await db.create_production(entry["session_id"], _active_block_id)
+                            await db.create_production(entry["session_id"], user_block_id)
                             reply_ready.set()
 
                         if production_launched and effective_name in _WA_PROGRESS_MESSAGES:

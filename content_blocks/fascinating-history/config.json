@@ -1,0 +1,49 @@
+{
+  "id": "fascinating-history",
+  "name": "Fascinating History",
+  "description": "Mind-blowing tales from human history — the Roman Empire, ancient Egypt, World War II, Indian independence, medieval warfare, forgotten civilisations, and the jaw-dropping moments that shaped the world.",
+  "style": "Cinematic photorealistic, 8K detail, dramatic lighting, period-accurate",
+  "duration_min": 18,
+  "duration_max": 30,
+  "example_topics": [
+    "Cleopatra lived closer in time to the Moon landing than to the building of the Great Pyramid",
+    "The Roman concrete that is stronger today than when it was poured 2,000 years ago",
+    "The Indian queen who fought the British Empire with her baby strapped to her back",
+    "Hitler's stolen art — the 650,000 pieces the Nazis looted across Europe",
+    "The Library of Alexandria didn't burn in one night — it died slowly over centuries",
+    "Genghis Khan killed so many people he actually cooled the Earth's climate",
+    "The 300 Spartans at Thermopylae — what actually happened"
+  ],
+  "narration_enabled": true,
+  "captions_enabled": true,
+  "youtube_trends_enabled": false,
+  "seed_keywords": [
+    "roman empire",
+    "ancient egypt",
+    "world war 2",
+    "indian independence",
+    "cleopatra",
+    "genghis khan",
+    "ancient civilisation",
+    "medieval history",
+    "pyramids",
+    "spartans",
+    "ottoman empire",
+    "mughal empire",
+    "viking",
+    "samurai"
+  ],
+  "noise_terms": [
+    "game", "minecraft", "fortnite", "roblox", "civilization vi",
+    "total war", "age of empires", "assassins creed", "call of duty",
+    "movie", "film", "trailer", "netflix", "series", "season",
+    "episode", "recap", "review", "unboxing",
+    "song", "lyrics", "music", "remix", "album", "concert",
+    "toy", "toys", "lego", "playmobil",
+    "school project", "powerpoint", "class presentation",
+    "drawing", "anime", "manga"
+  ],
+  "voice_style": "Intelligent, commanding male narrator with a warm baritone and a storyteller's rhythm. He speaks like a historian who can't help being fascinated — measured authority with moments of quiet intensity when the story demands it. Thinks of Dan Carlin meets David Attenborough.",
+  "music_style": "{duration} second Epic cinematic orchestral underscore with deep cellos, distant war drums, and sweeping strings. Builds from quiet tension to grand resolution. Period-neutral — works for ancient Rome, medieval Europe, or 20th-century conflict. No vocals, no lyrics.",
+  "created_at": "2026-09-03T00:00:00Z"
+}
