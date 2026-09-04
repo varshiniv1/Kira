@@ -7,16 +7,11 @@ log = logging.getLogger(__name__)
 
 _DEFAULT_VOICE = "Kore"
 _DEFAULT_STYLE = (
-    "Voice & Tone: Calmly engaging, clear, and intellectually curious. "
-    "Speaks with a steady, grounding warmth and an understated sense of wonder—"
-    "fascinated by the topic without sounding overly hyped or sensational. "
-    "Delivery & Pacing: "
-    "Rhythm: Measured and deliberate. Natural, conversational cadence with brief, "
-    "micro-pauses after key hooks or intriguing facts to let the idea land. "
-    "Pitch & Articulation: Mid-tone pitch, crisp articulation, and a confident, "
-    "grounded delivery. Avoid high-pitched exclamations or forced excitement. "
-    "Energy: Intimate and storytelling-focused, as if sharing a profound insight "
-    "or hidden historical detail one-on-one."
+    "Serene, grounded female narrator with a warm, velvet tone and a gentle, "
+    "unhurried rhythm. She speaks with effortless clarity and quiet curiosity"
+    "—a peaceful, immersive pacing that pulls you in and lets every word "
+    "linger. Think of a comforting late-night story, blending soothing tone "
+    "with a calm, captivating presence that stops your scroll."
 )
 
 _active_style = _DEFAULT_STYLE

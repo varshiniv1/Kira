@@ -6,7 +6,7 @@ generation (Gemini 3 Pro) and AI video generation (Gemini Omni Flash).
 ## INPUT
 
 A finished script with beats, narration, visual descriptions, audio
-notes, and total duration (15-20 seconds).
+notes, and total duration (35-45 seconds).
 
 ## OUTPUT FORMAT
 
@@ -14,7 +14,8 @@ Return a structured shot list in EXACTLY this format:
 
 ```
 TOTAL DURATION: [X seconds]
-NUMBER OF SHOTS: [3-5] (HARD MAX: 6)
+NUMBER OF SHOTS: [N]
+ESTIMATED NARRATION DURATION: [Y seconds — from word count at ~100 WPM]
 GLOBAL STYLE: [style keywords applied to EVERY image prompt]
 COLOUR PALETTE: [2-3 anchor colours used across all shots]
 LIGHT DIRECTION: [consistent primary light source description]
@@ -22,13 +23,13 @@ VOICEOVER PROMPT: "[full spoken narration for the whole Short — all
   shot narrations joined in order as one continuous script. Spoken
   words only. No SFX notes, no shot labels, no stage directions.]"
 VOICEOVER WORD COUNT: [N]
-TARGET WPM: [~140-150 for TOTAL DURATION — see timing rules]
+TARGET WPM: [~100 for TOTAL DURATION — see timing rules]
 
 ---
 
 SHOT 1 of N
-Duration: [5 or 6] seconds
-Beats covered: HOOK + CONTEXT (0:00 – 0:06)
+Duration: [5] seconds
+Beats covered: HOOK + CONTEXT (0:00 – 0:05)
 Narration: "[exact words for this shot]"
 
   Starting Image:
@@ -50,54 +51,53 @@ SHOT 2 of N
 
 ### Shot Duration Strategy
 
-The video pipeline generates clips of **5–6 seconds** (integer only; the
-model does not support shorter). Shots must sum to **≤30 seconds total**,
-which means a **maximum of 6 shots** (6 × 5 = 30 s). Aim for 3-5 shots
-at 5 s each (15-25 s) for a tight, punchy Short.
+The video pipeline generates clips of **5 seconds** each. You decide
+how many shots are needed based on the narration duration.
 
-**HARD RULE: plan at most 6 shots. Never plan 7 or more.**
+**How to plan shot count:**
+1. Count the words in the VOICEOVER PROMPT.
+2. Estimate narration duration at **~100 WPM** (the voice style is
+   calm and unhurried — this rate is calibrated to the actual TTS).
+3. Plan enough 5-second clips to cover that estimated duration.
+   Shots = ceil(estimated_duration / 5).
 
-Proven structures:
+| Word count | Est. duration | Shots needed |
+|------------|---------------|--------------|
+| ~58 words  | ~35 s         | 7 shots      |
+| ~63 words  | ~38 s         | 8 shots      |
+| ~67 words  | ~40 s         | 8 shots      |
+| ~72 words  | ~43 s         | 9 shots      |
+| ~75 words  | ~45 s         | 9 shots      |
 
-| Pattern              | Feel                          |
-|----------------------|-------------------------------|
-| 5 + 5 + 5 = 15      | Three-act, punchy             |
-| 5 + 5 + 5 + 5 = 20  | Four-act, energetic           |
-| 5 + 6 + 6 + 6 = 23  | Building to a climax          |
-| 5 + 5 + 5 + 5 + 5 = 25 | Five-beat full arc          |
-| 6 + 6 + 6 + 6 = 24  | Four-act, deliberate          |
-
-How to choose:
-- Most shots: 5 s — tight, punchy.
-- Payoff or establishing shot: 6 s.
-- Multiple distinct locations? 4-5 shots.
-- Single continuous scene? 3 shots.
-- Emotional build? Same duration, more shots.
+The pipeline will apply a mild speed adjustment (capped at 1.15x) to
+fit the TTS audio to the video duration. Your job is to get close via
+WPM targeting so the adjustment stays minimal.
 
 ### Voiceover Timing (TTS)
 
 Narration is generated later as ONE full-video TTS pass
 (fal gemini-3.1-flash-tts). Plan words so spoken length ≈ video length.
 
-Target ~**145 words per minute** (calm documentary pace):
+Target ~**100 words per minute** (calm, unhurried documentary pace):
 
 | Total duration | Target word count |
 |----------------|-------------------|
-| 15 s           | ~36 words         |
-| 16 s           | ~39 words         |
-| 18 s           | ~44 words         |
-| 20 s           | ~48 words         |
+| 35 s           | ~58 words         |
+| 38 s           | ~63 words         |
+| 40 s           | ~67 words         |
+| 43 s           | ~72 words         |
+| 45 s           | ~75 words         |
 
 Rules:
 1. VOICEOVER PROMPT = all shot Narration lines joined in order, as one
-   continuous paragraph (or short sentences). Spoken words ONLY.
-2. Per-shot Narration must fit that shot's duration at ~145 WPM
-   (e.g. a 6 s shot ≈ 14–15 words max).
-3. Prefer slightly UNDER the target word count — a bit of silence is
-   better than rushing. Stay under 55 words total.
-4. After video concat, the pipeline will speed/slow the TTS audio to
-   match exact video duration. Your job is to get close via WPM so
-   speed adjustment stays mild.
+   continuous paragraph. Spoken words ONLY.
+2. Per-shot Narration should distribute words roughly evenly across
+   shots (~8-9 words per 5s shot).
+3. Prefer slightly UNDER the target word count — a moment of trailing
+   silence is better than rushing. Stay a few words under the max.
+4. After video concat, the pipeline will mildly speed/slow the TTS
+   audio to match exact video duration (capped at 1.15x speedup).
+   Your job is to get close via WPM so adjustment stays gentle.
 
 ### Writing Reference Image Prompts
 
@@ -149,7 +149,12 @@ on output quality.
 5. **Always end with:** `9:16 vertical composition, no text overlay,
    no watermark, no embedded text, no labels, no writing, no captions`
 
-6. **Space-specific visual language:**
+6. **Visuals support the narration.** Each shot's image should
+   illustrate what the narration is explaining in that segment.
+   When the narration talks about a telescope's view, show that view.
+   When it describes emptiness, show emptiness.
+
+7. **Space-specific visual language:**
    - Rim-lit subjects against star fields
    - Volumetric nebula glow and god-rays
    - Lens flares from nearby stars (use sparingly)
@@ -239,8 +244,8 @@ is the hardest part and the most important.
 
 Before returning your shot list, verify every item:
 
-- [ ] Total duration is ≤30 seconds (max 6 shots × 5-6 s each)
-- [ ] Each shot is 5 or 6 seconds (integers only — model minimum is 5)
+- [ ] Shot count matches estimated narration duration (ceil(duration/5))
+- [ ] Each shot is 5 seconds
 - [ ] Every image prompt has: subject, composition, lighting, colour,
       style, "9:16 vertical", "no text overlay"
 - [ ] Style keywords are IDENTICAL across all image prompts
@@ -251,9 +256,9 @@ Before returning your shot list, verify every item:
 - [ ] Continuity notes explain the visual bridge between each pair of
       consecutive shots
 - [ ] VOICEOVER PROMPT is spoken words only (no SFX / labels)
-- [ ] VOICEOVER WORD COUNT matches ~145 WPM for TOTAL DURATION
-      (slightly under is OK; never over by much)
-- [ ] Each shot's Narration word count fits that shot's duration
+- [ ] VOICEOVER WORD COUNT matches ~100 WPM for TOTAL DURATION
+      (slightly under is OK; never over)
+- [ ] Narration words distribute roughly evenly across shots
 - [ ] Shot Narration lines concatenate cleanly into VOICEOVER PROMPT
-- [ ] End-frame of each shot logically connects to start-frame of the
-      next
+- [ ] End-frame of each shot logically connects to start-frame of next
+- [ ] Visuals support and illustrate the narration content

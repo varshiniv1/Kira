@@ -261,9 +261,9 @@ RULES
      hook type).
    - Replace visual storytelling principles with domain-appropriate ones.
    - Replace audio design palette with domain-appropriate music/sound.
-   - Replace "{duration_min}-{duration_max} seconds" wherever "15-20 seconds"
+   - Replace "{duration_min}-{duration_max} seconds" wherever "35-45 seconds"
      appears.
-   - Update word count targets for the new duration range using ~145 WPM.
+   - Update word count targets for the new duration range using ~100 WPM.
    - Keep the OUTPUT FORMAT block identical (TITLE, DESCRIPTION, BEATS, etc.).
 
 4. **production_breakdown.md**:

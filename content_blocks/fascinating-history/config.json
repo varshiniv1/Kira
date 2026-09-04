@@ -3,8 +3,8 @@
   "name": "Fascinating History",
   "description": "Mind-blowing tales from human history — the Roman Empire, ancient Egypt, World War II, Indian independence, medieval warfare, forgotten civilisations, and the jaw-dropping moments that shaped the world.",
   "style": "Cinematic photorealistic, 8K detail, dramatic lighting, period-accurate",
-  "duration_min": 18,
-  "duration_max": 30,
+  "duration_min": 35,
+  "duration_max": 45,
   "example_topics": [
     "Cleopatra lived closer in time to the Moon landing than to the building of the Great Pyramid",
     "The Roman concrete that is stronger today than when it was poured 2,000 years ago",
@@ -43,7 +43,7 @@
     "school project", "powerpoint", "class presentation",
     "drawing", "anime", "manga"
   ],
-  "voice_style": "Intelligent, commanding female narrator with a rich, resonant tone and an energetic storyteller's rhythm. She speaks with sharp authority and driven curiosity — rapid, engrossing pacing layered over moments of vivid intensity. Think of a high-octane narrative momentum blended with sharp, fascinated, precise delivery.",
+  "voice_style": "Serene, grounded female narrator with a warm, velvet tone and a gentle, unhurried rhythm. She speaks with effortless clarity and quiet curiosity—a peaceful, immersive pacing that pulls you in and lets every word linger. Think of a comforting late-night story, blending soothing tone with a calm, captivating presence that stops your scroll.",
   "music_style": "{duration} second Epic cinematic orchestral underscore with deep cellos, distant war drums, and sweeping strings. Builds from quiet tension to grand resolution. Period-neutral — works for ancient Rome, medieval Europe, or 20th-century conflict. No vocals, no lyrics.",
   "created_at": "2026-09-03T00:00:00Z"
 }

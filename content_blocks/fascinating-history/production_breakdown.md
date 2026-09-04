@@ -6,7 +6,7 @@ generation (Gemini 3 Pro) and AI video generation (Gemini Omni Flash).
 ## INPUT
 
 A finished script with beats, narration, visual descriptions, audio
-notes, and total duration (18-30 seconds).
+notes, and total duration (35-45 seconds).
 
 ## OUTPUT FORMAT
 
@@ -14,7 +14,8 @@ Return a structured shot list in EXACTLY this format:
 
 ```
 TOTAL DURATION: [X seconds]
-NUMBER OF SHOTS: [4-6] (HARD MAX: 6)
+NUMBER OF SHOTS: [N]
+ESTIMATED NARRATION DURATION: [Y seconds — from word count at ~100 WPM]
 GLOBAL STYLE: [style keywords applied to EVERY image prompt]
 COLOUR PALETTE: [2-3 anchor colours used across all shots]
 LIGHT DIRECTION: [consistent primary light source description]
@@ -22,13 +23,13 @@ VOICEOVER PROMPT: "[full spoken narration for the whole Short — all
   shot narrations joined in order as one continuous script. Spoken
   words only. No SFX notes, no shot labels, no stage directions.]"
 VOICEOVER WORD COUNT: [N]
-TARGET WPM: [~140-150 for TOTAL DURATION — see timing rules]
+TARGET WPM: [~100 for TOTAL DURATION — see timing rules]
 
 ---
 
 SHOT 1 of N
-Duration: [5 or 6] seconds
-Beats covered: HOOK + CONTEXT (0:00 – 0:06)
+Duration: 5 seconds
+Beats covered: HOOK + CONTEXT (0:00 – 0:05)
 Narration: "[exact words for this shot]"
 
   Starting Image:
@@ -50,57 +51,52 @@ SHOT 2 of N
 
 ### Shot Duration Strategy
 
-The video pipeline generates clips of **5–6 seconds** (integer only; the
-model does not support shorter). Shots must sum to **≤30 seconds total**,
-which means a **maximum of 6 shots** (6 × 5 = 30 s). Aim for 4-5 shots
-at 5 s each (20-25 s) for a punchy, well-paced Short.
+The video pipeline generates clips of **5 seconds** each. You decide
+how many shots are needed based on the narration duration.
 
-**HARD RULE: plan at most 6 shots. Never plan 7 or more.**
+**How to plan shot count:**
+1. Count the words in the VOICEOVER PROMPT.
+2. Estimate narration duration at **~100 WPM** (the voice style is
+   calm and unhurried — this rate is calibrated to the actual TTS).
+3. Plan enough 5-second clips to cover that estimated duration.
+   Shots = ceil(estimated_duration / 5).
 
-Proven structures:
+| Word count | Est. duration | Shots needed |
+|------------|---------------|--------------|
+| ~58 words  | ~35 s         | 7 shots      |
+| ~63 words  | ~38 s         | 8 shots      |
+| ~67 words  | ~40 s         | 8 shots      |
+| ~72 words  | ~43 s         | 9 shots      |
+| ~75 words  | ~45 s         | 9 shots      |
 
-| Pattern                    | Feel                          |
-|----------------------------|-------------------------------|
-| 5 + 5 + 5 + 5 = 20        | Four-act, punchy              |
-| 5 + 5 + 5 + 5 + 5 = 25   | Full-story, energetic         |
-| 5 + 5 + 6 + 6 + 6 = 28   | Building to a climax          |
-| 5 + 5 + 5 + 5 + 5 + 5 = 30 | Six-beat, max length          |
-| 5 + 6 + 6 + 6 = 23        | Four-act with payoff          |
-| 6 + 6 + 6 + 6 = 24        | Four-act, deliberate          |
-
-How to choose:
-- Most shots: 5 s — tight, energetic.
-- Epic reveal or payoff: 6 s max.
-- Multiple distinct locations/eras? Up to 6 shots.
-- Single continuous scene? Fewer shots (3-4).
-- Emotional build? Same duration, more shots.
+The pipeline will apply a mild speed adjustment (capped at 1.15x) to
+fit the TTS audio to the video duration. Your job is to get close via
+WPM targeting so the adjustment stays minimal.
 
 ### Voiceover Timing (TTS)
 
 Narration is generated later as ONE full-video TTS pass
 (fal gemini-3.1-flash-tts). Plan words so spoken length ≈ video length.
 
-Target ~**145 words per minute** (calm documentary pace):
+Target ~**100 words per minute** (calm, unhurried documentary pace):
 
 | Total duration | Target word count |
 |----------------|-------------------|
-| 18 s           | ~44 words         |
-| 20 s           | ~48 words         |
-| 22 s           | ~53 words         |
-| 25 s           | ~60 words         |
-| 28 s           | ~68 words         |
-| 30 s           | ~72 words         |
+| 35 s           | ~58 words         |
+| 38 s           | ~63 words         |
+| 40 s           | ~67 words         |
+| 43 s           | ~72 words         |
+| 45 s           | ~75 words         |
 
 Rules:
 1. VOICEOVER PROMPT = all shot Narration lines joined in order, as one
-   continuous paragraph (or short sentences). Spoken words ONLY.
-2. Per-shot Narration must fit that shot's duration at ~145 WPM
-   (e.g. a 6 s shot ≈ 14–15 words max).
-3. Prefer slightly UNDER the target word count — a bit of silence is
-   better than rushing. Stay under 75 words total.
-4. After video concat, the pipeline will speed/slow the TTS audio to
-   match exact video duration. Your job is to get close via WPM so
-   speed adjustment stays mild.
+   continuous paragraph. Spoken words ONLY.
+2. Per-shot Narration should distribute words roughly evenly across
+   shots (~8-9 words per 5s shot).
+3. Prefer slightly UNDER the target word count — a moment of trailing
+   silence is better than rushing.
+4. After video concat, the pipeline will mildly speed/slow the TTS
+   audio to match exact video duration (capped at 1.15x speedup).
 
 ### Writing Reference Image Prompts
 
@@ -136,43 +132,31 @@ on output quality.
      carved temple pillars, warm orange firelight"
 
 3. **Camera distance progresses logically.**
-   - Establish shots: "extreme wide shot showing the full battlefield
-     with thousands of soldiers stretching to the horizon"
-   - Mid shots: "medium shot of the commander on horseback against
-     the burning city skyline"
-   - Detail: "close-up of weathered hands gripping a bronze sword
-     hilt, knuckles white, sweat visible"
+   - Establish shots: "extreme wide shot showing the full battlefield"
+   - Mid shots: "medium shot of the commander on horseback"
+   - Detail: "close-up of weathered hands gripping a bronze sword"
 
 4. **Style consistency is non-negotiable.** Choose a base style and
-   repeat it in EVERY prompt:
-   - "cinematic photorealistic, 8K detail, dramatic lighting,
-     period-accurate"
-   - "hyper-detailed documentary photography, natural lighting"
-   - "epic historical film cinematography, anamorphic lens"
-   Keep the same colour temperature and lighting direction throughout.
+   repeat it in EVERY prompt. Keep the same colour temperature and
+   lighting direction throughout.
 
 5. **Always end with:** `9:16 vertical composition, no text overlay,
    no watermark, no embedded text, no labels, no writing, no captions`
 
-6. **History-specific visual language:**
-   - Weathered stone, aged metal, natural materials (wood, leather,
-     linen, silk)
+6. **Visuals support the narration.** Each shot's image should
+   illustrate what the narration is explaining in that segment.
+
+7. **History-specific visual language:**
+   - Weathered stone, aged metal, natural materials
    - Volumetric dust, smoke from fires/forges/battles
-   - Atmospheric haze — heat shimmer over deserts, mist over
-     battlefields at dawn
    - Period-accurate architecture with visible age and wear
-   - Human elements: crowds, armies, craftsmen at work, market
-     scenes
-   - Textures of age: patina on bronze, moss on stone, faded
-     paint on plaster
+   - Human elements: crowds, armies, craftsmen at work
    - Natural lighting: torches, oil lamps, campfires, sunlight
-     through temple windows
 
 ### Writing Video Generation Prompts
 
-The video prompt controls how Gemini Omni Flash animates the reference
-images. **Clip audio is discarded** — background music and TTS are
-added separately in post. Video prompts are **motion and visuals only**.
+**Clip audio is discarded** — background music and TTS are added
+separately. Video prompts are **motion and visuals only**.
 
 **Prompt template:**
 
@@ -185,98 +169,46 @@ added separately in post. Video prompts are **motion and visuals only**.
 **Camera movement vocabulary:**
 - `slow push-in` — builds intensity, great for reveals
 - `smooth orbital arc` — shows 3D dimensionality of structures
-- `tracking shot` — follows a moving subject (cavalry, marching army)
-- `slow pull-out / zoom out` — reveals scale (EXTREMELY powerful for
-  showing the size of armies, monuments, empires)
-- `static with subtle drift` — contemplative, lets the scene breathe
-- `tilt up / tilt down` — reveals vertical scale (pyramids, temples,
-  fortress walls)
-- `crane up / crane down` — dramatic height change (rising over a
-  battlefield)
-- `dolly alongside` — parallax depth (moving through ruins, along a
-  marching column)
+- `tracking shot` — follows a moving subject
+- `slow pull-out / zoom out` — reveals scale (armies, monuments)
+- `static with subtle drift` — contemplative
+- `tilt up / tilt down` — reveals vertical scale (pyramids, temples)
+- `crane up / crane down` — dramatic height change
+- `dolly alongside` — parallax depth
 
 **Rules:**
 
-1. **One primary camera movement per shot.** Do not combine zoom +
-   orbit + pan. Pick one. Subtle secondary drift is acceptable.
-
-2. **Speed matches emotion.** Slow = grandeur, awe. Medium = narrative.
-   Fast = battle, chaos. Historical content is almost always
-   slow-to-medium, with fast cuts reserved for battle beats.
-
-3. **End frame matters.** Describe exactly where the camera ends up.
-   The last frame is the visual bridge to the next shot.
-
-4. **No audio in Video Prompt.** Do not describe SFX, music, drums,
-   voice, or narration. Keep spoken words in the shot Narration field
-   and VOICEOVER PROMPT only.
-
-5. **Motion direction consistency.** If shot 1 moves camera-right,
-   shot 2 should not abruptly move camera-left unless a beat change
-   justifies it.
+1. **One primary camera movement per shot.**
+2. **Speed matches emotion.** Slow = grandeur. Medium = narrative.
+   Fast = battle, chaos.
+3. **End frame matters.** Visual bridge to the next shot.
+4. **No audio in Video Prompt.**
+5. **Motion direction consistency.**
 
 ### Ensuring Shot-to-Shot Continuity
 
-Multiple AI-generated clips must feel like ONE continuous video. This
-is the hardest part and the most important.
-
-**Visual continuity:**
-
-1. **Lighting direction stays fixed** unless location changes. If the
-   sun is top-right in shot 1, it is top-right in shot 2.
-
-2. **Colour palette bridge.** The dominant colour at the END of shot N
-   must appear at the START of shot N+1. If shot 1 ends in golden
-   amber, shot 2 opens with warm tones before transitioning.
-
+1. **Lighting direction stays fixed** unless location changes.
+2. **Colour palette bridge.** Dominant end colour → start of next.
 3. **Scale progression.** Generally wide → close, or small → large.
-   Do not randomly jump scales without purpose.
+4. **Motion handoff.** Continue forward motion across cuts.
 
-4. **Motion handoff.** If shot 1 ends pushing in, shot 2 can continue
-   forward motion or open on what we were approaching.
-
-**Transition strategies:**
-
-- **Match cut:** End shot N on a circular shape (shield boss), open
-  shot N+1 on another circle (coin, sun, dome). Describe this in
-  both the ending and opening of the relevant video prompts.
-
-- **Scale transition:** End shot N very wide (full battlefield), start
-  shot N+1 close-up on a detail visible in that wide view (a single
-  fallen soldier's helmet).
-
-- **Motion continuation:** End shot N moving right → start shot N+1
-  moving right.
-
-- **Time transition:** End shot N in golden daylight → start shot N+1
-  at dusk or night to show passage of time.
-
-- **Light transition:** End shot N moving into shadow → start shot N+1
-  emerging from darkness into new light (entering/exiting a temple,
-  dungeon, or tunnel).
+**Transition strategies:** match cut, scale transition, motion
+continuation, time transition, light transition.
 
 ### Quality Checklist
 
 Before returning your shot list, verify every item:
 
-- [ ] Total duration is ≤30 seconds (max 6 shots × 5-6 s each)
-- [ ] Each shot is 5 or 6 seconds (integers only — model minimum is 5)
+- [ ] Shot count matches estimated narration duration (ceil(duration/5))
+- [ ] Each shot is 5 seconds
 - [ ] Every image prompt has: subject, composition, lighting, colour,
       style, "9:16 vertical", "no text overlay"
 - [ ] Style keywords are IDENTICAL across all image prompts
 - [ ] Lighting direction is consistent (or change is justified)
 - [ ] Video Prompt contains ZERO audio / voice / narration language
-- [ ] Video prompts specify: camera movement, subject action, visual
-      effects, duration (no audio descriptions)
-- [ ] Continuity notes explain the visual bridge between each pair of
-      consecutive shots
 - [ ] VOICEOVER PROMPT is spoken words only (no SFX / labels)
-- [ ] VOICEOVER WORD COUNT matches ~145 WPM for TOTAL DURATION
-      (slightly under is OK; never over by much)
-- [ ] Each shot's Narration word count fits that shot's duration
+- [ ] VOICEOVER WORD COUNT matches ~100 WPM for TOTAL DURATION
 - [ ] Shot Narration lines concatenate cleanly into VOICEOVER PROMPT
-- [ ] End-frame of each shot logically connects to start-frame of the
-      next
+- [ ] Visuals support and illustrate the narration content
 - [ ] Historical period accuracy: armour, architecture, clothing, and
       weapons match the era depicted

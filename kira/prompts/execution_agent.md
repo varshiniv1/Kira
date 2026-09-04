@@ -17,10 +17,10 @@ audio design, title, and description. Review it and proceed.
 
 Call **plan_production()** with the complete script from Phase 1.
 
-It returns a shot-by-shot breakdown: how many shots (5–7), each shot
-fixed at 5 seconds, starting image prompts, video prompts, continuity
-notes, and a single VOICEOVER PROMPT sized for the total duration.
-Review it and proceed.
+It returns a shot-by-shot breakdown: shot count (driven by narration
+duration), starting image prompts, video prompts, continuity notes,
+and a single VOICEOVER PROMPT sized for the total duration. Review it
+and proceed.
 
 Before Phase 3: scan every Video Prompt. If any contains spoken
 narration, voiceover, "voice narrates", quoted dialogue, or audio/SFX
@@ -39,11 +39,11 @@ For **each shot** in the production plan, in order:
 2. Call generate_video() with:
    - image_url: the starting image URL for this shot
    - prompt: the cleaned video prompt (motion + visuals only)
-   - duration: 5 (always — do not pass any other value)
+   - duration: the duration from the production plan (5 or 6)
 
 3. Collect the returned video URL.
 
-Repeat for every shot. You will end up with 5-7 video URLs.
+Repeat for every shot.
 
 ## PHASE 4 — ASSEMBLE VIDEO
 

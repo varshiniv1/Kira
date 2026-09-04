@@ -25,6 +25,8 @@ from .captions import (
 # Mix levels: VO dominant, music as quiet bed underneath.
 _MUSIC_VOLUME = 0.18
 _VO_VOLUME = 1.0
+# Never speed up VO more than 1.15x — faster sounds obviously unnatural.
+_MAX_VO_TEMPO = 1.15
 
 
 def fit_and_mux_audio(
@@ -65,13 +67,20 @@ def fit_and_mux_audio(
 
     video_dur = probe_duration(video_path)
     vo_dur = probe_duration(vo_path)
-    music_tempo = tempo_for_duration(probe_duration(music_path), video_dur)
-    music_atempo = atempo_filter_chain(music_tempo)
     vo_tempo = tempo_for_duration(vo_dur, video_dur)
+    vo_tempo = min(vo_tempo, _MAX_VO_TEMPO)
     vo_atempo = atempo_filter_chain(vo_tempo)
+
+    effective_vo_dur = vo_dur / vo_tempo if vo_tempo != 1.0 else vo_dur
+    output_dur = max(video_dur, effective_vo_dur)
+    pad_needed = output_dur > video_dur + 0.5
+
+    music_tempo = tempo_for_duration(probe_duration(music_path), output_dur)
+    music_atempo = atempo_filter_chain(music_tempo)
     output_path = os.path.join(_tmp, f"kira_final_mux_{uuid.uuid4().hex[:6]}.mp4")
 
-    log.info("[MUX] VO duration=%.1fs, video=%.1fs, vo_tempo=%.3f", vo_dur, video_dur, vo_tempo)
+    log.info("[MUX] VO duration=%.1fs, video=%.1fs, vo_tempo=%.3f (capped at %.2f), output=%.1fs, pad=%s",
+             vo_dur, video_dur, vo_tempo, _MAX_VO_TEMPO, output_dur, pad_needed)
 
     has_captions = False
     try:
@@ -86,21 +95,28 @@ def fit_and_mux_audio(
     except Exception as e:
         log.warning("[MUX] Captions skipped (transcription failed): %s", e)
 
-    # Input 0: video (video stream only). Inputs 1/2: music + VO.
     audio_filter = (
         f"[1:a]{music_atempo},volume={_MUSIC_VOLUME}[music];"
         f"[2:a]{vo_atempo},volume={_VO_VOLUME}[vo];"
-        f"[music][vo]amix=inputs=2:duration=first:dropout_transition=0[a]"
+        f"[music][vo]amix=inputs=2:duration=longest:dropout_transition=0[a]"
     )
 
+    vf_parts: list[str] = []
+    if pad_needed:
+        vf_parts.append(f"tpad=stop_mode=clone:stop_duration={output_dur - video_dur:.2f}")
     if has_captions:
         ass_esc = ass_path.replace("\\", "/")
         fontsdir = get_fontsdir().replace("\\", "/")
-        filter_complex = f"[0:v]ass='{ass_esc}':fontsdir='{fontsdir}'[v];{audio_filter}"
+        vf_parts.append(f"ass='{ass_esc}':fontsdir='{fontsdir}'")
+
+    if vf_parts:
+        filter_complex = "[0:v]" + ",".join(vf_parts) + "[v];" + audio_filter
         video_args = ["-map", "[v]", "-c:v", "libx264", "-preset", "veryfast", "-crf", "20"]
     else:
         filter_complex = audio_filter
         video_args = ["-map", "0:v:0", "-c:v", "copy"]
+
+    duration_args = ["-t", f"{output_dur:.2f}"] if pad_needed else ["-shortest"]
 
     cmd = [
         "ffmpeg", "-y",
@@ -111,7 +127,7 @@ def fit_and_mux_audio(
         *video_args,
         "-map", "[a]",
         "-c:a", "aac",
-        "-shortest",
+        *duration_args,
         output_path,
     ]
     result = subprocess.run(cmd, capture_output=True)

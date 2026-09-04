@@ -91,8 +91,8 @@ def _build_execution_prompt(block_config: dict) -> str:
     for the block's narration/caption/duration settings."""
     base = _load_prompt("execution_agent.md")
 
-    dur_min = block_config.get("duration_min", 15)
-    dur_max = block_config.get("duration_max", 20)
+    dur_min = block_config.get("duration_min", 35)
+    dur_max = block_config.get("duration_max", 45)
     base = base.replace("15-20 seconds", f"{dur_min}-{dur_max} seconds")
     base = base.replace("15-20 s", f"{dur_min}-{dur_max} s")
 
@@ -201,9 +201,9 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
 
     def plan_production(script: str) -> str:
         """Plan the shot-by-shot production breakdown for a finished script.
-        Returns number of shots (5-7), each fixed at 5 seconds, starting
-        image prompts, video prompts, continuity notes, and a single
-        VOICEOVER PROMPT for TTS. Call AFTER write_script."""
+        Returns shot count (based on narration duration), starting image
+        prompts, video prompts, continuity notes, and a single VOICEOVER
+        PROMPT for TTS. Call AFTER write_script."""
         log.info("[TOOL] plan_production | script_len=%d", len(script))
         resp = _anthropic_client.messages.create(
             model=CLAUDE_MODEL,
@@ -302,8 +302,8 @@ def _load_default_agent() -> LlmAgent:
         "narration_enabled": True,
         "captions_enabled": True,
         "youtube_trends_enabled": True,
-        "duration_min": 15,
-        "duration_max": 20,
+        "duration_min": 35,
+        "duration_max": 45,
     }
     # Use prompts dir as block path (has the same .md files)
     return build_agents(fallback_config, PROMPTS_DIR)

@@ -3,8 +3,8 @@
   "name": "Space & Cosmos",
   "description": "Black holes, exoplanets, rocket launches, nebulae, asteroid impacts, space exploration milestones, and the jaw-dropping scale of the cosmos.",
   "style": "Cinematic photorealistic, 8K detail, film grain",
-  "duration_min": 18,
-  "duration_max": 30,
+  "duration_min": 35,
+  "duration_max": 45,
   "example_topics": [
     "The Boötes Void — the loneliest place in the universe",
     "What actually happens inside a black hole",
@@ -52,7 +52,7 @@
     "drawing",
     "imagens", "saurini", "viaggi"
   ],
-  "voice_style": "Intelligent, commanding female narrator with a rich, resonant tone and an energetic storyteller's rhythm. She speaks with sharp authority and driven curiosity — rapid, engrossing pacing layered over moments of vivid intensity. Think of a high-octane narrative momentum blended with sharp, fascinated, precise delivery.",
+  "voice_style": "Serene, grounded female narrator with a warm, velvet tone and a gentle, unhurried rhythm. She speaks with effortless clarity and quiet curiosity—a peaceful, immersive pacing that pulls you in and lets every word linger. Think of a comforting late-night story, blending soothing tone with a calm, captivating presence that stops your scroll.",
   "music_style": "{duration} second Subtle, atmospheric ambient music with deep, warm drones, soft celestial textures, and a slow evolving pulse. Minimal and unobtrusive, leaving plenty of space for a clear cinematic voice-over., no vocals, no lyrics.",
   "created_at": "2026-08-25T00:00:00Z"
 }

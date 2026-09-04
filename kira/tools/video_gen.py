@@ -23,10 +23,11 @@ def generate_video(image_url: str, prompt: str, duration: int = 5) -> str:
             subject action only — no audio, SFX, or narration (clip
             audio is discarded; TTS and background music are added
             later). Always specify 9:16 vertical.
-        duration: Always 5. Hard-coded — do not pass a different value.
+        duration: Clip length in seconds (5 or 6). Use the value from
+            the production plan.
 
     Returns: URL of the generated video clip."""
-    duration_int = 5
+    duration_int = max(5, min(int(duration), 6))
 
     log.info("[VIDEO_GEN] Starting video generation | image=%s | duration=%ds | prompt=%s",
              image_url[:80], duration_int, prompt[:120])
