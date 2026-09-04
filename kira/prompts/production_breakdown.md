@@ -6,7 +6,7 @@ generation (Gemini 3 Pro) and AI video generation (Gemini Omni Flash).
 ## INPUT
 
 A finished script with beats, narration, visual descriptions, audio
-notes, and total duration (15-20 seconds).
+notes, and total duration (25-35 seconds).
 
 ## OUTPUT FORMAT
 
@@ -14,7 +14,7 @@ Return a structured shot list in EXACTLY this format:
 
 ```
 TOTAL DURATION: [X seconds]
-NUMBER OF SHOTS: [2-4]
+NUMBER OF SHOTS: [5-7]
 GLOBAL STYLE: [style keywords applied to EVERY image prompt]
 COLOUR PALETTE: [2-3 anchor colours used across all shots]
 LIGHT DIRECTION: [consistent primary light source description]
@@ -27,7 +27,7 @@ TARGET WPM: [~140-150 for TOTAL DURATION — see timing rules]
 ---
 
 SHOT 1 of N
-Duration: [3-10] seconds
+Duration: 5 seconds
 Beats covered: HOOK + CONTEXT (0:00 – 0:06)
 Narration: "[exact words for this shot]"
 
@@ -50,26 +50,18 @@ SHOT 2 of N
 
 ### Shot Duration Strategy
 
-Gemini Omni Flash generates clips of **5–10 seconds** (integer). Shots
-must sum to 15-20 seconds total.
+Every clip is exactly **5 seconds**. Choose 5–7 shots:
 
-Proven structures:
+| Shots | Total duration | Feel                        |
+|-------|----------------|-----------------------------|
+| 5     | 25 s           | Tight, punchy               |
+| 6     | 30 s           | Balanced, versatile         |
+| 7     | 35 s           | Expansive, story-driven     |
 
-| Pattern         | Feel                          |
-|-----------------|-------------------------------|
-| 6 + 6 + 8 = 20 | Balanced, versatile           |
-| 5 + 8 + 7 = 20 | Quick hook, long development  |
-| 8 + 8 = 16     | Simple, high-impact           |
-| 10 + 10 = 20   | Two-act, cinematic            |
-| 5 + 5 + 5 + 5 = 20 | Fast-paced, dynamic       |
-| 6 + 8 + 6 = 20 | Slow build, quick close       |
-
-How to choose:
-- Hook demands a quick cut? Start with 5 s.
-- Payoff needs room to breathe? Give it 8–10 s.
-- Multiple distinct locations? More shots (3-4).
-- Single continuous scene? Fewer shots (2).
-- Emotional build? Short-to-long progression (5 → 7 → 8).
+How to choose shot count:
+- Fast hook + quick concept? Use 5 shots.
+- Multiple distinct locations or beats? Use 6-7 shots.
+- Emotional build with clear arc? Use 7 shots.
 
 ### Voiceover Timing (TTS)
 
@@ -78,23 +70,20 @@ Narration is generated later as ONE full-video TTS pass
 
 Target ~**145 words per minute** (calm documentary pace):
 
-| Total duration | Target word count |
-|----------------|-------------------|
-| 15 s           | ~36 words         |
-| 16 s           | ~39 words         |
-| 18 s           | ~44 words         |
-| 20 s           | ~48 words         |
+| Shots | Total duration | Target word count |
+|-------|----------------|-------------------|
+| 5     | 25 s           | ~60 words         |
+| 6     | 30 s           | ~73 words         |
+| 7     | 35 s           | ~85 words         |
 
 Rules:
 1. VOICEOVER PROMPT = all shot Narration lines joined in order, as one
    continuous paragraph (or short sentences). Spoken words ONLY.
-2. Per-shot Narration must fit that shot's duration at ~145 WPM
-   (e.g. a 6 s shot ≈ 14–15 words max).
-3. Prefer slightly UNDER the target word count — a bit of silence is
-   better than rushing. Stay under 55 words total.
-4. After video concat, the pipeline will speed/slow the TTS audio to
-   match exact video duration. Your job is to get close via WPM so
-   speed adjustment stays mild.
+2. Per-shot Narration must fit 5 seconds at ~145 WPM (≈ 12 words per shot max).
+3. Prefer slightly UNDER the target word count — a bit of trailing silence
+   is better than rushing the narration.
+4. The VO plays at its natural speed — it is NOT stretched to match video.
+   Getting word count right is the only timing control you have.
 
 ### Writing Reference Image Prompts
 

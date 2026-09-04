@@ -201,7 +201,7 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
 
     def plan_production(script: str) -> str:
         """Plan the shot-by-shot production breakdown for a finished script.
-        Returns number of shots (2-4), each shot's duration, starting
+        Returns number of shots (5-7), each fixed at 5 seconds, starting
         image prompts, video prompts, continuity notes, and a single
         VOICEOVER PROMPT for TTS. Call AFTER write_script."""
         log.info("[TOOL] plan_production | script_len=%d", len(script))

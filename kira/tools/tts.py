@@ -7,10 +7,16 @@ log = logging.getLogger(__name__)
 
 _DEFAULT_VOICE = "Kore"
 _DEFAULT_STYLE = (
-    "Clear, warm female voice with a calm, confident, measured delivery. "
-    "Cinematic documentary narration in the style of National Geographic "
-    "or Discovery science documentaries—intelligent, immersive, and "
-    "quietly captivating."
+    "Voice & Tone: Calmly engaging, clear, and intellectually curious. "
+    "Speaks with a steady, grounding warmth and an understated sense of wonder—"
+    "fascinated by the topic without sounding overly hyped or sensational. "
+    "Delivery & Pacing: "
+    "Rhythm: Measured and deliberate. Natural, conversational cadence with brief, "
+    "micro-pauses after key hooks or intriguing facts to let the idea land. "
+    "Pitch & Articulation: Mid-tone pitch, crisp articulation, and a confident, "
+    "grounded delivery. Avoid high-pitched exclamations or forced excitement. "
+    "Energy: Intimate and storytelling-focused, as if sharing a profound insight "
+    "or hidden historical detail one-on-one."
 )
 
 _active_style = _DEFAULT_STYLE
