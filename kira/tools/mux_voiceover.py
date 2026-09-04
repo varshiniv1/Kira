@@ -81,7 +81,7 @@ def fit_and_mux_audio(
         captions = group_into_captions(words)
         if captions:
             width, height = probe_dimensions(video_path)
-            write_ass_file(captions, width, height, ass_path, time_scale=vo_tempo)
+            write_ass_file(captions, width, height, ass_path, time_scale=1.0 / vo_tempo)
             has_captions = True
     except Exception as e:
         log.warning("[MUX] Captions skipped (transcription failed): %s", e)
