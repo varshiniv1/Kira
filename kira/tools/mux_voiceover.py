@@ -64,12 +64,15 @@ def fit_and_mux_audio(
     download(music_url, music_path)
 
     video_dur = probe_duration(video_path)
+    vo_dur = probe_duration(vo_path)
     music_tempo = tempo_for_duration(probe_duration(music_path), video_dur)
     music_atempo = atempo_filter_chain(music_tempo)
+    vo_tempo = tempo_for_duration(vo_dur, video_dur)
+    vo_atempo = atempo_filter_chain(vo_tempo)
     output_path = os.path.join(_tmp, f"kira_final_mux_{uuid.uuid4().hex[:6]}.mp4")
 
-    # VO plays at its natural speed — no atempo stretch. ffmpeg's -shortest
-    # trims it at the video endpoint so we never speed-up narration.
+    log.info("[MUX] VO duration=%.1fs, video=%.1fs, vo_tempo=%.3f", vo_dur, video_dur, vo_tempo)
+
     has_captions = False
     try:
         words = transcribe_words(vo_path)
@@ -78,7 +81,7 @@ def fit_and_mux_audio(
         captions = group_into_captions(words)
         if captions:
             width, height = probe_dimensions(video_path)
-            write_ass_file(captions, width, height, ass_path, time_scale=1.0)
+            write_ass_file(captions, width, height, ass_path, time_scale=vo_tempo)
             has_captions = True
     except Exception as e:
         log.warning("[MUX] Captions skipped (transcription failed): %s", e)
@@ -86,7 +89,7 @@ def fit_and_mux_audio(
     # Input 0: video (video stream only). Inputs 1/2: music + VO.
     audio_filter = (
         f"[1:a]{music_atempo},volume={_MUSIC_VOLUME}[music];"
-        f"[2:a]volume={_VO_VOLUME}[vo];"
+        f"[2:a]{vo_atempo},volume={_VO_VOLUME}[vo];"
         f"[music][vo]amix=inputs=2:duration=first:dropout_transition=0[a]"
     )
 
