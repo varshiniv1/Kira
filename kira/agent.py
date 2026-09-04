@@ -168,7 +168,6 @@ def build_agents(block_config: dict, block_path: str) -> LlmAgent:
         niche_description=block_config.get("description", block_config.get("name", "")),
         enabled=block_config.get("youtube_trends_enabled", True),
     )
-    tts.configure(block_config.get("voice_style", ""))
     background_music.configure(block_config.get("music_style", ""))
     memory_mod.configure(block_path)
 
