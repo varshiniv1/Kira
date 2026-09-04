@@ -5,15 +5,25 @@ import fal_client
 
 log = logging.getLogger(__name__)
 
-# George: warm resonant British male, calm and captivating — ideal for NatGeo/Discovery documentary.
-# Daniel: strong British broadcast voice — best authoritative alternative.
-# Rachel: warm American female — best female alternative.
-_DEFAULT_VOICE = "George"
+_DEFAULT_VOICE = "Kore"
+_DEFAULT_STYLE = (
+    "Clear, warm female voice with a calm, confident, measured delivery. "
+    "Cinematic documentary narration in the style of National Geographic "
+    "or Discovery science documentaries—intelligent, immersive, and "
+    "quietly captivating."
+)
+
+_active_style = _DEFAULT_STYLE
+
+
+def configure(voice_style: str):
+    global _active_style
+    _active_style = voice_style or _DEFAULT_STYLE
 
 
 def generate_voiceover(prompt: str) -> str:
     """Generate a full-video voiceover MP3 from narration text using
-    fal-ai/elevenlabs/tts/eleven-v3 (George voice).
+    fal-ai/gemini-3.1-flash-tts (Kore voice).
 
     Args:
         prompt: The complete spoken narration for the Short — all shots
@@ -28,13 +38,14 @@ def generate_voiceover(prompt: str) -> str:
     t0 = time.time()
     try:
         result = fal_client.subscribe(
-            "fal-ai/elevenlabs/tts/eleven-v3",
+            "fal-ai/gemini-3.1-flash-tts",
             arguments={
-                "text": prompt,
                 "voice": _DEFAULT_VOICE,
-                "stability": 0.65,
-                "language_code": "en",
-                "apply_text_normalization": "auto",
+                "prompt": prompt,
+                "temperature": 1,
+                "language_code": "English (US)",
+                "output_format": "mp3",
+                "style_instructions": _active_style,
             },
             with_logs=True,
             on_queue_update=lambda update: None,
